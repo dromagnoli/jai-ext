@@ -19,11 +19,15 @@ package it.geosolutions.jaiext.scale;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.RenderingHints;
+import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 
 import javax.media.jai.BorderExtender;
@@ -32,14 +36,10 @@ import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.ROIShape;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.TiledImage;
 
-
-import it.geosolutions.jaiext.interpolators.InterpolationBicubic;
-import it.geosolutions.jaiext.interpolators.InterpolationBilinear;
-import it.geosolutions.jaiext.interpolators.InterpolationNearest;
 import it.geosolutions.jaiext.range.Range;
 import it.geosolutions.jaiext.range.RangeFactory;
-import it.geosolutions.jaiext.scale.ScaleDescriptor;
 import it.geosolutions.jaiext.testclasses.TestBase;
 import it.geosolutions.rendered.viewer.RenderedImageBrowser;
 
@@ -372,5 +372,84 @@ public class TestScale extends TestBase {
         }
 
     }
+    
+    public void assertNoDataBleedByte(Interpolation interpolation) {
+        final byte constant = (byte) (0xff & 255);
+        RenderedImage source = getConstantImage(10, 10, new Byte[] {constant});
+        assertNoDataBleed(interpolation, source, 255);
+    }
+    
+    public void assertNoDataBleedShort(Interpolation interpolation) {
+        final short constant = (short) (0xffff & 65535);
+        RenderedImage source = getConstantImage(10, 10, new Short[] {constant});
+        assertNoDataBleed(interpolation, source, constant);
+    }
+    
+    public void assertNoDataBleedFloat(Interpolation interpolation) {
+        final float constant = 65535;
+        RenderedImage source = getConstantImage(10, 10, new Float[] {constant});
+        assertNoDataBleed(interpolation, source, (int) constant);
+    }
+    
+    public void assertNoDataBleedDouble(Interpolation interpolation) {
+        final double constant = 65535;
+        RenderedImage source = getConstantImage(10, 10, new Double[] {constant});
+        assertNoDataBleed(interpolation, source, (int) constant);
+    }
 
+    private void assertNoDataBleed(Interpolation interpolation, RenderedImage source, int expectedValue) {
+        RenderingHints hints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,BorderExtender.createInstance(BorderExtender.BORDER_COPY));
+        RenderedImage scaled= ScaleDescriptor.create(source, 2f, 2f,
+                0f, 0f, interpolation, null, null, RangeFactory.create(0, 0), null, hints);
+        // make sure all pixels are solid like the input ones
+        Raster raster = scaled.getData();
+        for (int i = raster.getMinY(); i < raster.getMinY() + raster.getHeight(); i++) {
+            for (int j = raster.getMinX(); j < raster.getMinX() + raster.getWidth(); j++) {
+                int value = raster.getSample(j, i, 0);
+                assertEquals("Unexpected value at " + i + ", " + j + ": " + value, expectedValue, value);
+            }
+        }
+    }
+
+    protected RenderedImage getConstantImage(float width, float height, Number[] values) {
+        ParameterBlock pb = new ParameterBlock();
+        pb.add(width);
+        pb.add(height);
+        pb.add(values);
+        return JAI.create("constant", pb);
+    }
+    
+    protected void assertInterpolateInHole(Interpolation interpolation) {
+        assertInterpolateInHole(DataBuffer.TYPE_BYTE, interpolation);
+        assertInterpolateInHole(DataBuffer.TYPE_USHORT, interpolation);
+    }
+    
+    protected void assertInterpolateInHole(int dataType, Interpolation interpolation) {
+        // build image with high ring at borders and almost nodata in the middle
+        SampleModel sm = new ComponentSampleModel(dataType, 10, 10, 1, 10, new int[] {0});
+        int width = 10;
+        int height = 10;
+        TiledImage source = new TiledImage(0, 0, 10, 10, 0, 0, sm, PlanarImage.createColorModel(sm));
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if(x == 0 || x == (width - 1) || y == 0 || y == (height - 1)) {
+                    source.setSample(x, y, 0, 255);
+                } else {
+                    source.setSample(x, y, 0, 1);
+                }
+                
+            }
+        }
+        RenderingHints hints = new RenderingHints(JAI.KEY_BORDER_EXTENDER,BorderExtender.createInstance(BorderExtender.BORDER_COPY));
+        RenderedImage scaled= ScaleDescriptor.create(source, 2f, 2f,
+                0f, 0f, interpolation, null, null, RangeFactory.create(0, 0), null, hints);
+        // make sure none of the pixels became 0
+        Raster raster = scaled.getData();
+        for (int i = raster.getMinY(); i < raster.getMinY() + raster.getHeight(); i++) {
+            for (int j = raster.getMinX(); j < raster.getMinX() + raster.getWidth(); j++) {
+                int value = raster.getSample(j, i, 0);
+                assertTrue("Expected valid value but found nodata", value > 0);
+            }
+        }
+    }
 }
