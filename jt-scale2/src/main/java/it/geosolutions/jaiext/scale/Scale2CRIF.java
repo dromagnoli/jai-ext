@@ -177,16 +177,16 @@ public class Scale2CRIF extends CRIFImpl {
                     destinationNoData, dataType, false, bic.getPrecisionBits());
         }
 
-        if (isBinary) {
+		if (nearestInterp && isBinary) {
             return new Scale2GeneralOpImage(source, layout, renderHints, extender, interp, xScale,
                     yScale, xTrans, yTrans, useRoiAccessor, nodata, backgroundValues);
-        } else if (nearestInterp) {
+		} else if (nearestInterp && !isBinary) {
             return new Scale2NearestOpImage(source, layout, renderHints, extender, interp, xScale,
                     yScale, xTrans, yTrans, useRoiAccessor, nodata, backgroundValues);
-        } else if (bilinearInterp) {
+		} else if (bilinearInterp && !isBinary) {
             return new Scale2BilinearOpImage(source, layout, renderHints, extender, interp, xScale,
                     yScale, xTrans, yTrans, useRoiAccessor, nodata, backgroundValues);
-        } else if (bicubicInterp) {
+		} else if (bicubicInterp && !isBinary) {
             return new Scale2BicubicOpImage(source, layout, renderHints, extender, interp, xScale,
                     yScale, xTrans, yTrans, useRoiAccessor, nodata, backgroundValues);
         } else {

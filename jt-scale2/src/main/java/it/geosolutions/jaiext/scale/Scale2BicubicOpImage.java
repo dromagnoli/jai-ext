@@ -555,7 +555,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                 // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
                                 // Otherwise it takes the related value.
-                                if (roiBounds.contains(x0, y0)) {
 
                                     int temp = 0;
                                     // X offset initialization
@@ -568,7 +567,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Selection of one pixel
                                             pixelKernel[h][z] = srcData[pos + (z - 1)
                                                     * srcPixelStride + (h - 1) * srcScanlineStride] & 0xff;
-                                            temp += roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) & 0xff;
+                                        final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ? 
+                                                roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                        temp += increment & 0xff;
                                         }
                                     }
                                     // Control if the 16 pixel are outside the ROI
@@ -600,10 +601,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                         }
 
                                         dstData[dstPixelOffset] = (byte) (s & 0xff);
-                                    }
-                                } else {
-                                    // The destination no data value is saved in the destination array
-                                    dstData[dstPixelOffset] = destinationNoDataByte[k];
                                 }
                                 // destination pixel offset update
                                 dstPixelOffset += dstPixelStride;
@@ -893,8 +890,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                     int x0 = src.getX() + posx / srcPixelStride;
                                     int y0 = src.getY() + (posy - bandOffset) / srcScanlineStride;
 
-                                    if (roiBounds.contains(x0, y0)) {
-
                                         int pos = posx + posy;
 
                                         // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
@@ -914,8 +909,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                                         * srcPixelStride + (h - 1)
                                                         * srcScanlineStride] & 0xff;
 
-                                                tempROI += roiIter.getSample(x0 + h - 1,
-                                                        y0 + z - 1, 0) & 0xff;
+                                            final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                    roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                            tempROI += increment & 0xff;
 
                                                 if (byteLookupTable[k][(int) pixelKernel[h][z]] != destinationNoDataByte[k]) {
                                                     weight |= (0x01 << (4 * h + z));
@@ -968,10 +964,7 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Clamp and overshooting fix
                                             s = InterpolationBicubic.clampAndFixOvershootingByte(s, destinationNoDataByte[k]);
                                             dstData[dstPixelOffset] = (byte) (s & 0xff);
-                                        }
 
-                                    } else {
-                                        dstData[dstPixelOffset] = destinationNoDataByte[k];
                                     }
 
                                     // destination pixel offset update
@@ -1201,7 +1194,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                 // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
                                 // Otherwise it takes the related value.
-                                if (roiBounds.contains(x0, y0)) {
 
                                     int temp = 0;
                                     // X offset initialization
@@ -1214,7 +1206,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Selection of one pixel
                                             pixelKernel[h][z] = srcData[pos + (z - 1)
                                                     * srcPixelStride + (h - 1) * srcScanlineStride] & 0xffff;
-                                            temp += roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) & 0xffff;
+                                        final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                        temp += increment & 0xffff;
                                         }
                                     }
                                     // Control if the 16 pixel are outside the ROI
@@ -1241,10 +1235,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                         // Clamp and overshooting fix
                                         s = InterpolationBicubic.clampAndFixOvershootingUShort(s, destinationNoDataUShort[k]);
                                         dstData[dstPixelOffset] = (short) (s & 0xffff);
-                                    }
-                                } else {
-                                    // The destination no data value is saved in the destination array
-                                    dstData[dstPixelOffset] = destinationNoDataUShort[k];
                                 }
                                 // destination pixel offset update
                                 dstPixelOffset += dstPixelStride;
@@ -1509,8 +1499,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                     int x0 = src.getX() + posx / srcPixelStride;
                                     int y0 = src.getY() + (posy - bandOffset) / srcScanlineStride;
 
-                                    if (roiBounds.contains(x0, y0)) {
-
                                         int pos = posx + posy;
 
                                         // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
@@ -1528,9 +1516,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                                 pixelKernel[h][z] = srcData[pos + (z - 1)
                                                         * srcPixelStride + (h - 1)
                                                         * srcScanlineStride] & 0xffff;
-
-                                                tempROI += roiIter.getSample(x0 + h - 1,
-                                                        y0 + z - 1, 0) & 0xffff;
+                                            final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                    roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                            tempROI += increment & 0xffff;
 
                                                 if (!noData.contains((short) pixelKernel[h][z])) {
                                                     weight |= (0x01 << (4 * h + z));
@@ -1582,10 +1570,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Clamp and overshooting fix
                                             s = InterpolationBicubic.clampAndFixOvershootingUShort(s, destinationNoDataUShort[k]);
                                             dstData[dstPixelOffset] = (short) (s & 0xffff);
-                                        }
-
-                                    } else {
-                                        dstData[dstPixelOffset] = destinationNoDataUShort[k];
                                     }
 
                                     // destination pixel offset update
@@ -1819,8 +1803,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                 // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
                                 // Otherwise it takes the related value.
-                                if (roiBounds.contains(x0, y0)) {
-
                                     int temp = 0;
                                     // X offset initialization
                                     int offsetX = 4 * xfrac[i];
@@ -1832,7 +1814,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Selection of one pixel
                                             pixelKernel[h][z] = srcData[pos + (z - 1)
                                                     * srcPixelStride + (h - 1) * srcScanlineStride];
-                                            temp += roiIter.getSample(x0 + h - 1, y0 + z - 1, 0);
+                                        final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                        temp += increment & 0xffff;
                                         }
                                     }
                                     // Control if the 16 pixel are outside the ROI
@@ -1864,10 +1848,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                         }
 
                                         dstData[dstPixelOffset] = (short) s;
-                                    }
-                                } else {
-                                    // The destination no data value is saved in the destination array
-                                    dstData[dstPixelOffset] = destinationNoDataShort[k];
                                 }
                                 // destination pixel offset update
                                 dstPixelOffset += dstPixelStride;
@@ -2140,8 +2120,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                     int x0 = src.getX() + posx / srcPixelStride;
                                     int y0 = src.getY() + (posy - bandOffset) / srcScanlineStride;
 
-                                    if (roiBounds.contains(x0, y0)) {
-
                                         int pos = posx + posy;
 
                                         // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
@@ -2159,8 +2137,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                                         * srcPixelStride + (h - 1)
                                                         * srcScanlineStride];
 
-                                                tempROI += roiIter.getSample(x0 + h - 1,
-                                                        y0 + z - 1, 0);
+                                            final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                    roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                            tempROI += increment;
 
                                                 if (!noData.contains((short) pixelKernel[h][z])) {
                                                     weight |= (0x01 << (4 * h + z));
@@ -2217,10 +2196,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             }
 
                                             dstData[dstPixelOffset] = (short) s;
-                                        }
-
-                                    } else {
-                                        dstData[dstPixelOffset] = destinationNoDataShort[k];
                                     }
 
                                     // destination pixel offset update
@@ -2440,8 +2415,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                 // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
                                 // Otherwise it takes the related value.
-                                if (roiBounds.contains(x0, y0)) {
-
                                     int temp = 0;
                                     // X offset initialization
                                     int offsetX = 4 * xfrac[i];
@@ -2453,7 +2426,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Selection of one pixel
                                             pixelKernel[h][z] = srcData[pos + (z - 1)
                                                     * srcPixelStride + (h - 1) * srcScanlineStride];
-                                            temp += roiIter.getSample(x0 + h - 1, y0 + z - 1, 0);
+                                        final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                        temp += increment;
                                         }
                                     }
                                     // Control if the 16 pixel are outside the ROI
@@ -2478,10 +2453,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                         s = (int) ((sum + round) >> precisionBits);
 
                                         dstData[dstPixelOffset] = s;
-                                    }
-                                } else {
-                                    // The destination no data value is saved in the destination array
-                                    dstData[dstPixelOffset] = destinationNoDataInt[k];
                                 }
                                 // destination pixel offset update
                                 dstPixelOffset += dstPixelStride;
@@ -2743,8 +2714,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                     int x0 = src.getX() + posx / srcPixelStride;
                                     int y0 = src.getY() + (posy - bandOffset) / srcScanlineStride;
 
-                                    if (roiBounds.contains(x0, y0)) {
-
                                         int pos = posx + posy;
 
                                         // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
@@ -2761,9 +2730,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                                 pixelKernel[h][z] = srcData[pos + (z - 1)
                                                         * srcPixelStride + (h - 1)
                                                         * srcScanlineStride];
-
-                                                tempROI += roiIter.getSample(x0 + h - 1,
-                                                        y0 + z - 1, 0);
+                                            final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                    roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                            tempROI += increment;
 
                                                 if (!noData.contains((int) pixelKernel[h][z])) {
                                                     weight |= (0x01 << (4 * h + z));
@@ -2813,12 +2782,7 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             s = (int) ((sum + round) >> precisionBits);
 
                                             dstData[dstPixelOffset] = s;
-                                        }
-
-                                    } else {
-                                        dstData[dstPixelOffset] = destinationNoDataInt[k];
                                     }
-
                                     // destination pixel offset update
                                     dstPixelOffset += dstPixelStride;
                                 }
@@ -3043,8 +3007,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                 // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
                                 // Otherwise it takes the related value.
-                                if (roiBounds.contains(x0, y0)) {
-
                                     int temp = 0;
                                     // X offset initialization
                                     int offsetX = 4 * xfrac[i];
@@ -3056,7 +3018,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Selection of one pixel
                                             pixelKernel[h][z] = srcData[pos + (z - 1)
                                                     * srcPixelStride + (h - 1) * srcScanlineStride];
-                                            temp += roiIter.getSample(x0 + h - 1, y0 + z - 1, 0);
+                                        final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                        temp += increment;
                                         }
                                     }
                                     // Control if the 16 pixel are outside the ROI
@@ -3085,10 +3049,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                         // The interpolated value is saved in the destination array
                                         dstData[dstPixelOffset] = (float) sum;
-                                    }
-                                } else {
-                                    // The destination no data value is saved in the destination array
-                                    dstData[dstPixelOffset] = destinationNoDataFloat[k];
                                 }
                                 // destination pixel offset update
                                 dstPixelOffset += dstPixelStride;
@@ -3358,8 +3318,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                     int x0 = src.getX() + posx / srcPixelStride;
                                     int y0 = src.getY() + (posy - bandOffset) / srcScanlineStride;
 
-                                    if (roiBounds.contains(x0, y0)) {
-
                                         int pos = posx + posy;
 
                                         // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
@@ -3376,10 +3334,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                                 pixelKernel[h][z] = srcData[pos + (z - 1)
                                                         * srcPixelStride + (h - 1)
                                                         * srcScanlineStride];
-
-                                                tempROI += roiIter.getSample(x0 + h - 1,
-                                                        y0 + z - 1, 0);
-
+                                            final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                    roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                            tempROI += increment;
                                                 if (!noData.contains((float) pixelKernel[h][z])) {
                                                     weight |= (0x01 << (4 * h + z));
                                                 } else {
@@ -3432,10 +3389,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                             // The interpolated value is saved in the destination array
                                             dstData[dstPixelOffset] = (float) sum;
-                                        }
-
-                                    } else {
-                                        dstData[dstPixelOffset] = destinationNoDataFloat[k];
                                     }
 
                                     // destination pixel offset update
@@ -3648,8 +3601,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                 // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
                                 // Otherwise it takes the related value.
-                                if (roiBounds.contains(x0, y0)) {
-
                                     int temp = 0;
                                     // X offset initialization
                                     int offsetX = 4 * xfrac[i];
@@ -3661,7 +3612,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                             // Selection of one pixel
                                             pixelKernel[h][z] = srcData[pos + (z - 1)
                                                     * srcPixelStride + (h - 1) * srcScanlineStride];
-                                            temp += roiIter.getSample(x0 + h - 1, y0 + z - 1, 0);
+                                        final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                        temp += increment;
                                         }
                                     }
                                     // Control if the 16 pixel are outside the ROI
@@ -3683,10 +3636,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                         // The interpolated value is saved in the destination array
                                         dstData[dstPixelOffset] = sum;
-                                    }
-                                } else {
-                                    // The destination no data value is saved in the destination array
-                                    dstData[dstPixelOffset] = destinationNoDataDouble[k];
                                 }
                                 // destination pixel offset update
                                 dstPixelOffset += dstPixelStride;
@@ -3941,8 +3890,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                     int x0 = src.getX() + posx / srcPixelStride;
                                     int y0 = src.getY() + (posy - bandOffset) / srcScanlineStride;
 
-                                    if (roiBounds.contains(x0, y0)) {
-
                                         int pos = posx + posy;
 
                                         // Check if the selected index belongs to the roi data array: if it is not present, the weight is 0,
@@ -3960,10 +3907,9 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
                                                 pixelKernel[h][z] = srcData[pos + (z - 1)
                                                         * srcPixelStride + (h - 1)
                                                         * srcScanlineStride];
-
-                                                tempROI += roiIter.getSample(x0 + h - 1,
-                                                        y0 + z - 1, 0);
-
+                                            final int increment = roiBounds.contains(x0 + h - 1, y0 + z - 1) ?
+                                                    roiIter.getSample(x0 + h - 1, y0 + z - 1, 0) : 0;
+                                            tempROI += increment;
                                                 if (!noData.contains(pixelKernel[h][z])) {
                                                     weight |= (0x01 << (4 * h + z));
                                                 } else {
@@ -4009,10 +3955,6 @@ public class Scale2BicubicOpImage extends Scale2OpImage {
 
                                             // The interpolated value is saved in the destination array
                                             dstData[dstPixelOffset] = sum;
-                                        }
-
-                                    } else {
-                                        dstData[dstPixelOffset] = destinationNoDataDouble[k];
                                     }
 
                                     // destination pixel offset update
